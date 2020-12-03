@@ -1,5 +1,7 @@
 # ACE2005 preprocessing
 
+This preprocessing pipeline is based on https://github.com/nlpcl-lab/ace2005-preprocessing. 
+
 This is a simple code for preprocessing ACE 2005 corpus for Event Extraction task, based on the github repo https://github.com/nlpcl-lab/ace2005-preprocessing. 
 
 To make the entities and the arguments correspond more clearly, we added another processing stage after the original process.
@@ -40,6 +42,10 @@ sudo python main.py --data=./data/ace_2005_td_v7/data/English --nlp=./stanford-c
 ## Output
 
 ### Format
+
+Each file is a JSON containing a list of instances. Below is a sample of an instance. For each instance, "words" is a list of words in the sentence; "event-mentions" is a list of events in the sentence, where "arguments" in event-mentions correspond with the "entities"; "entities" is a list of entities in the sentence; "event-labels" is a list of event-types corresponding with the words in the sentence.
+
+Below is a sample: 
 
 **`sample.json`**
 ```json
