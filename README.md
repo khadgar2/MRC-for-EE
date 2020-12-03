@@ -30,4 +30,3 @@ In *tests*, we saved experiment files. One should move the desired script to the
 
 ## Remarks
 This repository is still under construction; we will add more experiment scripts/results and comments on files overtime.
-# Machine-Reading-Comprehension-for-Event-Detection
