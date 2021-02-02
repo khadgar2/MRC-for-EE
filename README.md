@@ -29,3 +29,4 @@ We implement our models and training framework based on hugginface-transformers 
 In *tests*, we saved experiment files. One should move the desired script to the root directory and then execute it. It will train models according to configurations specified in the script. Experiment scripts are compatible with fully supervised and few-shot learning and their evaluations.
 
 ## Dependencies
+Environment dependencies are listed in env_spec.yml. We suggest using conda package managing tool and use command ''conda env create -f env_spec.yml'' to create the environment we used to conduct experiments. 
