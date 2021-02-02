@@ -6,7 +6,6 @@ import seqeval.metrics as metrics
 import sklearn.metrics as sk_metrics
 import torch
 import numpy
-from IPython import embed
 
 def get_last_valid_column(masks):
     """ Return the index of the column after which, inclusively,
