@@ -226,22 +226,21 @@ class RCArgumentModel(
     def training_epoch_end(self, outputs):
         self.ground_truth_argument_evaluators['train'].restart()
         self.event_pred_argument_evaluators['train'].restart()
-        return {}
 
     def training_step(self, batch, batch_idx):
         loss = self.step(batch, batch_idx, 'train')
-        return {'loss': loss}
+        return loss
 
     def validation_step(self, batch, batch_idx):
         loss = self.step(batch, batch_idx, 'val')
-        return {'val_loss': loss}
+        return loss
 
     def test_step(self, batch, batch_idx):
         loss = self.step(batch, batch_idx, 'test')
-        return {'test_loss': loss}
+        return loss
 
     def validation_epoch_end(self, outputs):
-        loss = torch.mean(self.gather_outputs(outputs, 'val_loss'))
+        loss = torch.mean(torch.stack(outputs, 0))
         display = {'val_loss': loss}
         evaluator = self.ground_truth_argument_evaluators['val']
         display['gr_truth_arg_pr'] = evaluator.metric('precision')
@@ -254,10 +253,11 @@ class RCArgumentModel(
         display['ev_pred_arg_f1'] = evaluator.metric('f1')
         display = {x: torch.tensor(t) for x, t in display.items()}
         evaluator.restart()
-        return {'progress_bar': display, 'log': display}
+        for x, t in display.items():
+            self.log(x, t)
 
     def test_epoch_end(self, outputs):
-        loss = torch.mean(self.gather_outputs(outputs, 'test_loss'))
+        loss = torch.mean(torch.stack(outputs, 0))
         display = {'test_loss': loss}
         evaluator = self.ground_truth_argument_evaluators['test']
         display['gr_truth_arg_pr'] = evaluator.metric('precision')
@@ -270,7 +270,8 @@ class RCArgumentModel(
         display['ev_pred_arg_f1'] = evaluator.metric('f1')
         display = {x: torch.tensor(t) for x, t in display.items()}
         evaluator.restart()
-        return {'progress_bar': display, 'log': display}
+        for x, t in display.items():
+            self.log(x, t)
 
     def gather_outputs(self, outputs, keyword):
         target = [x[keyword] for x in outputs]

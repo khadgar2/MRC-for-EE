@@ -48,7 +48,7 @@ class RCEntailModel(
             'reverse_query': True,
             'use_sep': True,
             'nsamps': 'all',
-            'neutral_as': 'none',
+            'neutral_as': 'negative',
             'warmup_steps': 0,
             'max_desc_sentences': 10,
         })
@@ -190,7 +190,6 @@ class RCEntailModel(
         )
         #print(self.train_data.tokenizer.decode(inputs['input_ids'][0]))
         mnli_logits = self(inputs)
-
         # 0: contradict, 1: entailment, 2: neural
         assert self.params.neutral_as in ['positive', 'negative', 'none']
         event_logits = mnli_logits[:, :2]
@@ -212,41 +211,45 @@ class RCEntailModel(
     def training_epoch_end(self, outputs):
         self.event_evaluators['train'].restart()
         self.train_data.grouped_shuffle()
-        return {}
 
     def training_step(self, batch, batch_idx):
         loss = self.step(batch, batch_idx, 'train')
-        return {'loss': loss}
+        return loss
 
     def validation_step(self, batch, batch_idx):
         loss = self.step(batch, batch_idx, 'val')
-        return {'val_loss': loss}
+        return loss
 
     def test_step(self, batch, batch_idx):
         loss = self.step(batch, batch_idx, 'test')
-        return {'test_loss': loss}
+        return loss
 
     def validation_epoch_end(self, outputs):
-        loss = torch.mean(self.gather_outputs(outputs, 'val_loss'))
+        loss = torch.mean(torch.stack(outputs, 0))
         display = {'val_loss': loss}
         evaluator = self.event_evaluators['val']
         display['ev_pr'] = evaluator.metric('precision')
         display['ev_re'] = evaluator.metric('recall')
         display['ev_f1'] = evaluator.metric('f1')
         display = {x: torch.tensor(t) for x, t in display.items()}
+        for x, t in display.items():
+            self.log(x, t)
         evaluator.restart()
-        return {'progress_bar': display, 'log': display}
+        #return {'progress_bar': display, 'log': display}
 
     def test_epoch_end(self, outputs):
-        loss = torch.mean(self.gather_outputs(outputs, 'test_loss'))
+        loss = torch.mean(torch.stack(outputs, 0))
+        #loss = torch.mean(self.gather_outputs(outputs, 'test_loss'))
         display = {'test_loss': loss}
         evaluator = self.event_evaluators['test']
         display['ev_pr'] = evaluator.metric('precision')
         display['ev_re'] = evaluator.metric('recall')
         display['ev_f1'] = evaluator.metric('f1')
         display = {x: torch.tensor(t) for x, t in display.items()}
+        for x, t in display.items():
+            self.log(x, t)
         evaluator.restart()
-        return {'progress_bar': display, 'log': display}
+        #return {'progress_bar': display, 'log': display}
 
     def gather_outputs(self, outputs, keyword):
         target = [x[keyword] for x in outputs]
